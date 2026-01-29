@@ -8,3 +8,6 @@ project/models/**
 src/gen/**
 
 *.os
+
+# ignore my local symlink
+godot-cpp
