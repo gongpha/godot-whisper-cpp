@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dn6xfnjhge1o7"]
+
+[ext_resource type="Script" uid="uid://rr13wtbviycf" path="res://audio.gd" id="1_qc0l7"]
+
+[node name="Control" type="Control" unique_id=572947816]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_qc0l7")

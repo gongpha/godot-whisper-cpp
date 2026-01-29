@@ -1,0 +1,6 @@
+[submodule "thirdparty/whisper"]
+	path = thirdparty/whisper
+	url = https://github.com/openai/whisper.git
+[submodule "thirdparty/whisper.cpp"]
+	path = thirdparty/whisper.cpp
+	url = https://github.com/ggml-org/whisper.cpp

@@ -1,0 +1,10 @@
+__pycache__/
+/bin/**
+.sconsign.dblite
+
+project/addons/whisper.cpp/bin/**
+project/models/**
+
+src/gen/**
+
+*.os
