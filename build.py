@@ -85,6 +85,10 @@ def _process_env(self, env, sources, is_gdextension):
     sources.extend(self.Glob(thirdparty_dir + "ggml/src/*.c"))
     sources.extend(self.Glob(thirdparty_dir + "src/*.cpp"))
 
+    # Windows-specific libraries for ggml-cpu (uses Registry functions)
+    if env["platform"] == "windows":
+        env.Append(LIBS=["Advapi32"])
+
     if env["use_vulkan"]:
         # vulkan support
         _setup_vulkan(self, env, sources, is_gdextension)
@@ -287,6 +291,7 @@ def _setup_vulkan(self, env, sources, is_gdextension):
     if env["platform"] == "windows":
         vulkan_sdk = os.environ.get("VULKAN_SDK", "")
         if vulkan_sdk:
+            env.Append(CPPPATH=[os.path.join(vulkan_sdk, "Include")])
             env.Append(LIBPATH=[os.path.join(vulkan_sdk, "Lib")])
         env.Append(LIBS=["vulkan-1"])
     elif env["platform"] == "macos":
