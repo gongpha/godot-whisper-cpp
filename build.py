@@ -3,9 +3,14 @@ import os
 import glob
 import shutil
 
+from SCons.Variables import BoolVariable
+
 thirdparty_dir = "thirdparty/whisper.cpp/"
 
-def _process_env(self, env, sources):
+def _setup_options(opts):
+    opts.Add(BoolVariable("use_vulkan", "Enable Vulkan GPU acceleration", False))
+
+def _process_env(self, env, sources, is_gdextension):
     if env["platform"] == "windows":
         is_msvc = "mingw" not in env["TOOLS"]
     else :
@@ -80,13 +85,14 @@ def _process_env(self, env, sources):
     sources.extend(self.Glob(thirdparty_dir + "ggml/src/*.c"))
     sources.extend(self.Glob(thirdparty_dir + "src/*.cpp"))
 
-    # vulkan support
-    _setup_vulkan(self, env, sources)
+    if env["use_vulkan"]:
+        # vulkan support
+        _setup_vulkan(self, env, sources, is_gdextension)
 
 
-def _setup_vulkan(self, env, sources):
+def _setup_vulkan(self, env, sources, is_gdextension):
     """Setup Vulkan backend support"""
-    from SCons.Script import Environment, ARGUMENTS
+    from SCons.Script import Environment, ARGUMENTS, Command, Depends
 
     print("Enabling Vulkan support for whisper.cpp")
 
@@ -133,13 +139,16 @@ def _setup_vulkan(self, env, sources):
                             glslc_path = potential
                             break
             else:
+                # check VULKAN_SDK environment variable first
+                vulkan_sdk = os.environ.get("VULKAN_SDK", "")
                 potential_paths = [
+                    os.path.join(vulkan_sdk, "bin", "glslc") if vulkan_sdk else "",
                     "/usr/bin/glslc",
                     "/usr/local/bin/glslc",
                     os.path.expanduser("~/.local/bin/glslc"),
                 ]
                 for p in potential_paths:
-                    if os.path.exists(p):
+                    if p and os.path.exists(p):
                         glslc_path = p
                         break
 
@@ -170,13 +179,18 @@ def _setup_vulkan(self, env, sources):
         if env["platform"] == "windows":
             shader_gen_exe += ".exe"
 
-        shader_tool = tool_env.Program(
-            target=shader_gen_exe,
-            source=[gen_src],
-        )
+        # check if we need to generate shaders (header doesn't exist or any cpp missing)
+        def check_need_generate():
+            if not os.path.exists(target_hpp):
+                return True
+            for shader_file in shader_comp_files:
+                shader_name = os.path.basename(shader_file)
+                target_cpp = os.path.join(gen_output_dir, shader_name + ".cpp")
+                if not os.path.exists(target_cpp):
+                    return True
+            return False
 
-        # check if we need to generate shaders (header doesn't exist)
-        need_generate = not os.path.exists(target_hpp)
+        need_generate = check_need_generate()
 
         # function to generate all shaders
         def generate_all_shaders(tool_path):
@@ -209,44 +223,58 @@ def _setup_vulkan(self, env, sources):
             print("Vulkan shaders generated successfully!")
             return True
 
-        # if shaders don't exist and the tool already exists, generate now
-        if need_generate and os.path.exists(shader_gen_exe):
+        # Build the shader generator tool if it doesn't exist
+        if need_generate and not os.path.exists(shader_gen_exe):
+            print("Building vulkan-shaders-gen tool...")
+            # We need to build the tool synchronously before SCons evaluates the build graph
+            # because the generated cpp files must exist for SCons to compile them
+            shader_tool = tool_env.Program(
+                target=shader_gen_exe,
+                source=[gen_src],
+            )
+            # Force the tool to build now by executing SCons for just this target
+            # We use subprocess to invoke scons for this specific tool
+            import sys
+            
+            # Compile the shader generator manually using the tool_env settings
+            is_msvc = env["platform"] == "windows" and "mingw" not in env["TOOLS"]
+            if is_msvc:
+                compile_cmd = ["cl", "/std:c++17", "/EHsc", gen_src, "/Fe:" + shader_gen_exe]
+            else:
+                compile_cmd = ["g++", "-o", shader_gen_exe, "-std=c++17", "-pthread", gen_src]
+            
+            print("Compiling shader generator: " + " ".join(compile_cmd))
+            result = subprocess.run(compile_cmd, cwd=os.path.dirname(os.path.abspath(__file__)))
+            if result.returncode != 0:
+                print("ERROR: Failed to compile vulkan-shaders-gen")
+                from SCons.Script import Exit
+                Exit(1)
+        
+        # Generate shaders if needed (tool should exist now)
+        if need_generate:
+            if not os.path.exists(shader_gen_exe):
+                print("ERROR: vulkan-shaders-gen not found at: " + shader_gen_exe)
+                from SCons.Script import Exit
+                Exit(1)
             if not generate_all_shaders(shader_gen_exe):
                 from SCons.Script import Exit
                 Exit(1)
 
-        # action for Command to run after tool is built
-        def run_shader_gen_action(target, source, env):
-            tool_path = str(source[0])
-            if not generate_all_shaders(tool_path):
-                return 1
-            # touch the stamp file
-            with open(str(target[0]), 'w') as f:
-                f.write("generated")
-            return 0
-
-        # create a stamp file target to trigger shader generation
-        shader_gen_stamp = os.path.join(gen_output_dir, ".shader_gen_stamp")
-
-        # only run Command if we still need to generate
-        if need_generate:
-            from SCons.Script import Command, Depends
-            shader_gen_cmd = Command(
-                shader_gen_stamp,
-                shader_tool,
-                run_shader_gen_action
-            )
-            # make sure sources depend on shader generation
-            Depends(sources, shader_gen_cmd)
-
         # add ggml-vulkan.cpp
-        sources.append(vulkan_dir + "ggml-vulkan.cpp")
+        if is_gdextension:
+            vulkan_object = self.SharedObject
+        else:
+            vulkan_object = self.Object
 
-        # add generated cpp files
+        vulkan_cpp = vulkan_object(vulkan_dir + "ggml-vulkan.cpp")
+        sources.append(vulkan_cpp)
+
+        # add generated cpp files (they now exist after synchronous generation)
         for shader_file in shader_comp_files:
             shader_name = os.path.basename(shader_file)
             target_cpp = os.path.join(gen_output_dir, shader_name + ".cpp")
-            sources.append(target_cpp)
+            shader_obj = vulkan_object(target_cpp)
+            sources.append(shader_obj)
 
     else:
         # use pre-generated shader files

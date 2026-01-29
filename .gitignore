@@ -8,6 +8,7 @@ project/models/**
 src/gen/**
 
 *.os
+compile_commands.json
 
 # ignore my local symlink
 godot-cpp

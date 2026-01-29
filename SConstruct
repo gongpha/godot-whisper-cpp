@@ -28,8 +28,7 @@ customs = [os.path.abspath(path) for path in customs]
 
 opts = Variables(customs, ARGUMENTS)
 
-# add vulkan option
-opts.Add(BoolVariable("use_vulkan", "Enable Vulkan GPU acceleration", False))
+build._setup_options(opts)
 
 opts.Update(localEnv)
 
@@ -46,9 +45,6 @@ Run the following command to download godot-cpp:
 
 env = SConscript("godot-cpp/SConstruct", {"env": env, "customs": customs})
 
-# pass use_vulkan to the environment
-env["use_vulkan"] = localEnv.get("use_vulkan", False)
-
 env.Append(CPPPATH=["src/"])
 sources = Glob("src/*.cpp")
 
@@ -63,7 +59,7 @@ env.Append(CPPDEFINES=[
 ])
 
 env.__class__._process_env = build._process_env
-env._process_env(env, sources)
+env._process_env(env, sources, True)
 ###
 
 if env["target"] in ["editor", "template_debug"]:
