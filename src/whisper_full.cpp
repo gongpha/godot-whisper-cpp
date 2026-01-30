@@ -531,12 +531,12 @@ int WhisperFull::get_gpu_device() const {
 	return gpu_device;
 }
 
-void WhisperFull::set_strategy(int p_strategy) {
+void WhisperFull::set_strategy(Strategy p_strategy) {
 	strategy = (whisper_sampling_strategy)p_strategy;
 }
 
-int WhisperFull::get_strategy() const {
-	return (int)strategy;
+WhisperFull::Strategy WhisperFull::get_strategy() const {
+	return (Strategy)strategy;
 }
 
 void WhisperFull::set_n_threads(int p_n_threads) {
@@ -1068,6 +1068,19 @@ Ref<WhisperSegment> WhisperFull::get_segment(int p_index) const {
 	segment->set_no_speech_prob(whisper_full_get_segment_no_speech_prob(ctx, p_index));
 
 	return segment;
+}
+
+int WhisperFull::get_all_segments_native(LocalVector<Ref<WhisperSegment>> &r_segments) const {
+	ERR_FAIL_COND_V_MSG(ctx == nullptr, 0, "[WhisperFull] context not initialized");
+
+	int n_segments = whisper_full_n_segments(ctx);
+	uint32_t size = r_segments.size();
+	r_segments.resize(size + n_segments);
+	for (int i = 0; i < n_segments; i++) {
+		r_segments[size + i] = get_segment(i);
+	}
+
+	return n_segments;
 }
 
 TypedArray<WhisperSegment> WhisperFull::get_all_segments() const {

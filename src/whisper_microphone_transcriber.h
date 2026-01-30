@@ -68,8 +68,8 @@ class WhisperMicrophoneTranscriber : public Node {
 	PackedFloat32Array pcmf32_old;        // audio kept from previous transcription
 
 	// results queue (protected by mutex)
-	Vector<String> pending_texts;
-	Vector<Ref<WhisperSegment>> pending_segments;
+	LocalVector<String> pending_texts;
+	LocalVector<Ref<WhisperSegment>> pending_segments;
 
 	// timing
 	float accumulated_time = 0.0f;

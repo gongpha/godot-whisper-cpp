@@ -453,7 +453,8 @@ void WhisperMicrophoneTranscriber::_process_audio() {
 	if (result == 0) {
 		// get results
 		String full_text = whisper->get_full_text();
-		TypedArray<WhisperSegment> segments = whisper->get_all_segments();
+		LocalVector<Ref<WhisperSegment>> segments;
+		whisper->get_all_segments_native(segments);
 
         //print_line(full_text);
 
@@ -483,8 +484,8 @@ void WhisperMicrophoneTranscriber::_process_audio() {
 /* --- emit results on main thread --- */
 
 void WhisperMicrophoneTranscriber::_emit_pending_results() {
-	Vector<String> texts_to_emit;
-	Vector<Ref<WhisperSegment>> segments_to_emit;
+	LocalVector<String> texts_to_emit;
+	LocalVector<Ref<WhisperSegment>> segments_to_emit;
 
 	{
 #ifdef _GDEXTENSION

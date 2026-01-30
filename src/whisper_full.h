@@ -4,9 +4,9 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
 #include <godot_cpp/variant/typed_array.hpp>
+#include <godot_cpp/variant/local_vector.hpp>
 using namespace godot;
 #else
-#include "core/object/ref_counted.h"
 #include "core/variant/typed_array.h"
 #endif
 
@@ -47,8 +47,7 @@ public:
 	~WhisperSegment();
 };
 
-// this class represents "whisper_full" functionality
-// it manages the whisper context and provides transcription methods
+// this class represents the function "whisper_full" from whisper.cpp.
 class WhisperFull : public RefCounted {
 	GDCLASS(WhisperFull, RefCounted);
 
@@ -150,8 +149,8 @@ public:
 	int get_gpu_device() const;
 
 	// sampling strategy
-	void set_strategy(int p_strategy);
-	int get_strategy() const;
+	void set_strategy(Strategy p_strategy);
+	Strategy get_strategy() const;
 
 	// full params - threads
 	void set_n_threads(int p_n_threads);
@@ -340,6 +339,7 @@ public:
 	// get transcription results
 	int get_segment_count() const;
 	Ref<WhisperSegment> get_segment(int p_index) const;
+	int get_all_segments_native(LocalVector<Ref<WhisperSegment>> &r_segments) const;
 	TypedArray<WhisperSegment> get_all_segments() const;
 	String get_full_text() const;
 
