@@ -4,7 +4,7 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
 #include <godot_cpp/variant/typed_array.hpp>
-#include <godot_cpp/variant/local_vector.hpp>
+#include <godot_cpp/templates/local_vector.hpp>
 using namespace godot;
 #else
 #include "core/variant/typed_array.h"
@@ -328,6 +328,9 @@ public:
 	static int get_lang_id(const String &p_lang);
 	static String get_lang_str(int p_id);
 	static String get_lang_str_full(int p_id);
+
+	// audio utilities
+	static PackedFloat32Array convert_stereo_to_mono_16khz(int p_from_sample_rate, const PackedVector2Array &p_stereo_data);
 
 	// transcription methods
 	// transcribe from PCM float32 samples (must be 16kHz mono)

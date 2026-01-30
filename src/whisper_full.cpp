@@ -396,6 +396,9 @@ void WhisperFull::_bind_methods() {
 	ClassDB::bind_static_method("WhisperFull", D_METHOD("get_version"), &WhisperFull::get_version);
 	ClassDB::bind_static_method("WhisperFull", D_METHOD("get_sample_rate"), &WhisperFull::get_sample_rate);
 
+	// utilities
+	ClassDB::bind_static_method("WhisperFull", D_METHOD("convert_stereo_to_mono_16khz", "from_sample_rate", "samples"), &WhisperFull::convert_stereo_to_mono_16khz);
+
 	// note : this class is not Resource-based. so there's no way to display properties in the inspector ?
 
 	ADD_GROUP("Model", "");
@@ -1167,4 +1170,43 @@ String WhisperFull::get_version() {
 
 int WhisperFull::get_sample_rate() {
 	return WHISPER_SAMPLE_RATE;
+}
+
+// perform linear interpolation resampling + stereo to mono.
+// btw, this function is just for convenience, you can use your own resampling library if you want.
+PackedFloat32Array WhisperFull::convert_stereo_to_mono_16khz(int p_from_sample_rate, const PackedVector2Array &p_stereo_data) {
+	PackedFloat32Array result;
+
+	if (p_stereo_data.is_empty()) {
+		return result;
+	}
+
+	float whisper_sample_rate = WHISPER_SAMPLE_RATE;
+	float ratio = p_from_sample_rate / whisper_sample_rate;
+
+	int output_size = int(p_stereo_data.size() / ratio);
+	if (output_size <= 0) {
+		return result;
+	}
+
+	result.resize(output_size);
+	float *result_ptr = result.ptrw();
+	const Vector2 *stereo_ptr = p_stereo_data.ptr();
+	int stereo_size = p_stereo_data.size();
+
+	for (int i = 0; i < output_size; i++) {
+		float src_index = float(i) * ratio;
+		int idx0 = int(src_index);
+		int idx1 = MIN(idx0 + 1, stereo_size - 1);
+		float frac = src_index - float(idx0);
+
+		// stereo to mono (average of left and right)
+		float sample0 = (stereo_ptr[idx0].x + stereo_ptr[idx0].y) * 0.5f;
+		float sample1 = (stereo_ptr[idx1].x + stereo_ptr[idx1].y) * 0.5f;
+
+		// linear interpolation
+		result_ptr[i] = sample0 + (sample1 - sample0) * frac;
+	}
+
+	return result;
 }

@@ -77,7 +77,6 @@ class WhisperMicrophoneTranscriber : public Node {
 	// internal methods
 	void _thread_func();
 	void _process_audio();
-	PackedFloat32Array _convert_to_mono_16khz(const PackedVector2Array &p_stereo_data);
 	void _setup_audio_bus();
 	void _cleanup_audio_bus();
 	void _emit_pending_results();

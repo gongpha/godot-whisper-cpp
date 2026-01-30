@@ -6,11 +6,13 @@
 #include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/audio_server.hpp>
 using namespace godot;
 #else
 #include "core/string/print_string.h"
 #include "core/config/engine.h"
 #include "core/os/os.h"
+#include "servers/audio/audio_server.h"
 #endif
 
 /* --- WhisperMicrophoneTranscriber implementation --- */
@@ -162,54 +164,6 @@ void WhisperMicrophoneTranscriber::_cleanup_audio_bus() {
 	audio_effect.unref();
 }
 
-/* --- audio conversion --- */
-
-PackedFloat32Array WhisperMicrophoneTranscriber::_convert_to_mono_16khz(const PackedVector2Array &p_stereo_data) {
-	PackedFloat32Array result;
-
-	if (p_stereo_data.is_empty()) {
-		return result;
-	}
-
-	AudioServer *audio_server = AudioServer::get_singleton();
-	if (!audio_server) {
-		return result;
-	}
-
-	// godot's sample rate (usually 44100 or 48000)
-	float godot_sample_rate = audio_server->get_mix_rate();
-	float whisper_sample_rate = 16000.0f;
-	float ratio = godot_sample_rate / whisper_sample_rate;
-
-	int output_size = int(p_stereo_data.size() / ratio);
-	if (output_size <= 0) {
-		return result;
-	}
-
-	result.resize(output_size);
-	float *result_ptr = result.ptrw();
-	const Vector2 *stereo_ptr = p_stereo_data.ptr();
-	int stereo_size = p_stereo_data.size();
-
-	// simple linear interpolation resampling + stereo to mono
-    // TODO: use an external resampling library for better quality ?
-	for (int i = 0; i < output_size; i++) {
-		float src_index = float(i) * ratio;
-		int idx0 = int(src_index);
-		int idx1 = MIN(idx0 + 1, stereo_size - 1);
-		float frac = src_index - float(idx0);
-
-		// stereo to mono (average of left and right)
-		float sample0 = (stereo_ptr[idx0].x + stereo_ptr[idx0].y) * 0.5f;
-		float sample1 = (stereo_ptr[idx1].x + stereo_ptr[idx1].y) * 0.5f;
-
-		// linear interpolation
-		result_ptr[i] = sample0 + (sample1 - sample0) * frac;
-	}
-
-	return result;
-}
-
 /* --- control methods --- */
 
 bool WhisperMicrophoneTranscriber::start() {
@@ -340,7 +294,10 @@ void WhisperMicrophoneTranscriber::_thread_func() {
 				PackedVector2Array stereo_data = audio_effect->get_buffer(frames_available);
 				audio_effect->clear_buffer();
 
-				PackedFloat32Array mono_data = _convert_to_mono_16khz(stereo_data);
+				AudioServer *audio_server = AudioServer::get_singleton();
+				int sample_rate = audio_server->get_mix_rate();
+
+				PackedFloat32Array mono_data = WhisperFull::convert_stereo_to_mono_16khz(sample_rate, stereo_data);
 
 				if (!mono_data.is_empty()) {
 #ifdef _GDEXTENSION
