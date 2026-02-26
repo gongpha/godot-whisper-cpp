@@ -129,11 +129,11 @@ protected:
 	static void _bind_methods();
 
 public:
-    enum Strategy {
+	enum Strategy {
 		GREEDY = WHISPER_SAMPLING_GREEDY,
 		BEAM_SEARCH = WHISPER_SAMPLING_BEAM_SEARCH,
 	};
-    
+	
 	// model management
 	void set_model(const Ref<WhisperModel> &p_model);
 	Ref<WhisperModel> get_model() const;
