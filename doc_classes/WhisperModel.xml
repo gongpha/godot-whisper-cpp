@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WhisperModel" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource containing the file path to a Whisper AI model binary.
+	</brief_description>
+	<description>
+		This resource represents a loaded Whisper model binary (usually with a [code].bin[/code] extension). It stores the path to the model file so that [WhisperFull] can initialize the whisper.cpp context when the model is assigned.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="bin_path" type="String" setter="set_bin_path" getter="get_bin_path" default="&quot;&quot;">
+			The absolute or resource path to the whisper model binary file.
+		</member>
+	</members>
+</class>

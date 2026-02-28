@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceFormatLoaderWhisperModel" inherits="ResourceFormatLoader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Loads Whisper model binaries (.bin) as [WhisperModel] resources.
+	</brief_description>
+	<description>
+		A custom [ResourceFormatLoader] that allows Godot to recognize and load [code].bin[/code] files containing Whisper AI model weights as [WhisperModel] resources. This allows whisper models to be assigned directly in the editor inspector and loaded automatically by the engine.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

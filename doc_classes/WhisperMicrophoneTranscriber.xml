@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WhisperMicrophoneTranscriber" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node that captures microphone audio and transcribes it in real-time.
+	</brief_description>
+	<description>
+		This node provides real-time speech-to-text transcription using an assigned [WhisperFull] instance. It captures audio from a microphone using Godot's [AudioEffectCapture] on the audio bus.
+		The capturing and transcription process runs in a background thread to prevent blocking the main game thread. It processes audio chunks continuously according to [member step_ms] and emits signals whenever new text segments are transcribed.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_running" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the transcriber is currently capturing audio and processing transcriptions in the background.
+			</description>
+		</method>
+		<method name="push_audio_chunk">
+			<return type="void" />
+			<param index="0" name="samples" type="PackedFloat32Array" />
+			<description>
+				Manually pushes a chunk of audio samples to the transcriber. This can be used as an alternative to automatic microphone capture. The samples must be 16kHz mono PCM float32 format.
+			</description>
+		</method>
+		<method name="start">
+			<return type="bool" />
+			<description>
+				Starts the microphone capture and background transcription thread. Requires a valid [WhisperFull] instance assigned to [member whisper]. Returns [code]true[/code] if successfully started.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the capturing process and safely terminates the background transcription thread.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="keep_ms" type="int" setter="set_keep_ms" getter="get_keep_ms" default="200">
+			The amount of audio overlapping from the previous step to keep in the buffer, in milliseconds. This helps whisper maintain context across chunk boundaries and prevents words from being cut off.
+		</member>
+		<member name="length_ms" type="int" setter="set_length_ms" getter="get_length_ms" default="10000">
+			The maximum length of the audio buffer to keep for continuous transcription, in milliseconds.
+		</member>
+		<member name="step_ms" type="int" setter="set_step_ms" getter="get_step_ms" default="3000">
+			The interval at which audio chunks are processed and sent to the whisper model, in milliseconds. A lower value results in more frequent updates but higher CPU usage.
+		</member>
+		<member name="whisper" type="WhisperFull" setter="set_whisper" getter="get_whisper">
+			The [WhisperFull] instance to use for transcription. This configured wrapper holds the loaded model and inference parameters. Must be set before calling [method start].
+		</member>
+	</members>
+	<signals>
+		<signal name="transcription_error">
+			<param index="0" name="error" type="String" />
+			<description>
+				Emitted when an error occurs during audio capture or the whisper inference process.
+			</description>
+		</signal>
+		<signal name="transcription_segment">
+			<param index="0" name="segment" type="WhisperSegment" />
+			<description>
+				Emitted whenever a new completed speech segment is transcribed. The [param segment] object contains the text and timing info.
+			</description>
+		</signal>
+		<signal name="transcription_started">
+			<description>
+				Emitted when the background transcription threading has successfully started after calling [method start].
+			</description>
+		</signal>
+		<signal name="transcription_stopped">
+			<description>
+				Emitted when the transcription process has completely stopped after calling [method stop].
+			</description>
+		</signal>
+		<signal name="transcription_text">
+			<param index="0" name="text" type="String" />
+			<description>
+				Emitted with the raw text string continuously as transcriptions are produced. This provides the most immediate access to the transcribed words.
+			</description>
+		</signal>
+	</signals>
+</class>
