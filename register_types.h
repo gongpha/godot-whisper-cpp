@@ -2,14 +2,14 @@
 
 #ifdef _GDEXTENSION
 #include <godot_cpp/godot.hpp>
-#define GDXMOD_LIBRARY_INITIALIZE_FUNC initialize_##_GDXMOD_LIB_NAME##_types
-#define GDXMOD_LIBRARY_UNINITIALIZE_FUNC uninitialize_##_GDXMOD_LIB_NAME##_types
+#define GDXMOD_LIBRARY_INITIALIZE_FUNC initialize_whisper_types
+#define GDXMOD_LIBRARY_UNINITIALIZE_FUNC uninitialize_whisper_types
 #define GDXMOD_LIBRARY_INITIALIZE_NAME GDXMOD_LIBRARY_INITIALIZE_FUNC(godot::ModuleInitializationLevel p_level)
 #define GDXMOD_LIBRARY_UNINITIALIZE_NAME GDXMOD_LIBRARY_UNINITIALIZE_FUNC(godot::ModuleInitializationLevel p_level)
 #else
 #include "modules/register_module_types.h"
-#define GDXMOD_LIBRARY_INITIALIZE_FUNC initialize_##_GDXMOD_LIB_NAME##_module
-#define GDXMOD_LIBRARY_UNINITIALIZE_FUNC uninitialize_##_GDXMOD_LIB_NAME##_module
+#define GDXMOD_LIBRARY_INITIALIZE_FUNC initialize_whisper_module
+#define GDXMOD_LIBRARY_UNINITIALIZE_FUNC uninitialize_whisper_module
 #define GDXMOD_LIBRARY_INITIALIZE_NAME GDXMOD_LIBRARY_INITIALIZE_FUNC(ModuleInitializationLevel p_level)
 #define GDXMOD_LIBRARY_UNINITIALIZE_NAME GDXMOD_LIBRARY_UNINITIALIZE_FUNC(ModuleInitializationLevel p_level)
 #endif

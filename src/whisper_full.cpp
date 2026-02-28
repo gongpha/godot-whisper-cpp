@@ -7,6 +7,7 @@
 using namespace godot;
 #else
 #include "core/string/print_string.h"
+#include "core/io/file_access.h"
 #endif
 
 #include <whisper.h>

@@ -46,7 +46,7 @@ String ResourceFormatLoaderWhisperModel::_get_resource_type(const String &p_path
 #else
 
 Ref<Resource> ResourceFormatLoaderWhisperModel::load(
-	const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float p_priority
+	const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode
 ) {
 	Ref<WhisperModel> model;
 	model.instantiate();

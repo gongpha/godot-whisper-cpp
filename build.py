@@ -5,7 +5,8 @@ import shutil
 
 from SCons.Variables import BoolVariable
 
-thirdparty_dir = "thirdparty/whisper.cpp/"
+_module_dir = os.path.dirname(os.path.abspath(__file__))
+thirdparty_dir = os.path.join(_module_dir, "thirdparty", "whisper.cpp") + os.sep
 
 def _setup_options(opts):
     opts.Add(BoolVariable("use_vulkan", "Enable Vulkan GPU acceleration", False))
@@ -89,7 +90,12 @@ def _process_env(self, env, sources, is_gdextension):
     if env["platform"] == "windows":
         env.Append(LIBS=["Advapi32"])
 
-    if env["use_vulkan"]:
+    if is_gdextension:
+        use_vulkan = env["use_vulkan"]
+    else:
+        use_vulkan = env["vulkan"]
+
+    if use_vulkan:
         # vulkan support
         _setup_vulkan(self, env, sources, is_gdextension)
 
@@ -163,8 +169,9 @@ def _setup_vulkan(self, env, sources, is_gdextension):
 
         #print("Using glslc: " + glslc_path)
 
-        # output paths
-        gen_output_dir = os.path.abspath("bin/gen/vulkan-shaders")
+        # output paths (relative to Godot project root, not CWD)
+        godot_root = env.Dir('#').abspath
+        gen_output_dir = os.path.join(godot_root, "bin", "gen", "vulkan-shaders")
         spv_output_dir = os.path.join(gen_output_dir, "spv")
         target_hpp = os.path.join(gen_output_dir, "ggml-vulkan-shaders.hpp")
         shaders_cwd = os.path.abspath(vulkan_shaders_dir)
@@ -179,7 +186,7 @@ def _setup_vulkan(self, env, sources, is_gdextension):
         env.Append(CPPPATH=[gen_output_dir])
 
         # build the shader generator tool
-        shader_gen_exe = os.path.abspath("bin/vulkan-shaders-gen")
+        shader_gen_exe = os.path.join(godot_root, "bin", "vulkan-shaders-gen")
         if env["platform"] == "windows":
             shader_gen_exe += ".exe"
 
@@ -267,18 +274,16 @@ def _setup_vulkan(self, env, sources, is_gdextension):
         # add ggml-vulkan.cpp
         if is_gdextension:
             vulkan_object = self.SharedObject
-        else:
-            vulkan_object = self.Object
 
-        vulkan_cpp = vulkan_object(vulkan_dir + "ggml-vulkan.cpp")
-        sources.append(vulkan_cpp)
+            vulkan_cpp = vulkan_object(vulkan_dir + "ggml-vulkan.cpp")
+            sources.append(vulkan_cpp)
 
-        # add generated cpp files (they now exist after synchronous generation)
-        for shader_file in shader_comp_files:
-            shader_name = os.path.basename(shader_file)
-            target_cpp = os.path.join(gen_output_dir, shader_name + ".cpp")
-            shader_obj = vulkan_object(target_cpp)
-            sources.append(shader_obj)
+            # add generated cpp files (they now exist after synchronous generation)
+            for shader_file in shader_comp_files:
+                shader_name = os.path.basename(shader_file)
+                target_cpp = os.path.join(gen_output_dir, shader_name + ".cpp")
+                shader_obj = vulkan_object(target_cpp)
+                sources.append(shader_obj)
 
     else:
         # use pre-generated shader files

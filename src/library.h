@@ -13,7 +13,7 @@ using namespace godot;
 
 static Ref<ResourceFormatLoaderWhisperModel> whisper_model_resource_loader;
 
-void initialize_library(ModuleInitializationLevel p_level) {
+void initialize_library_whisper(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -26,15 +26,23 @@ void initialize_library(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(WhisperMicrophoneTranscriber);
 
 	whisper_model_resource_loader.instantiate();
+#ifdef _GDEXTENSION
 	ResourceLoader::get_singleton()->add_resource_format_loader(whisper_model_resource_loader);
+#else
+	ResourceLoader::add_resource_format_loader(whisper_model_resource_loader);
+#endif
 }
 
-void uninitialize_library(ModuleInitializationLevel p_level) {
+void uninitialize_library_whisper(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 
 	//
+#ifdef _GDEXTENSION
 	ResourceLoader::get_singleton()->remove_resource_format_loader(whisper_model_resource_loader);
+#else
+	ResourceLoader::remove_resource_format_loader(whisper_model_resource_loader);
+#endif
 	whisper_model_resource_loader.unref();
 }
