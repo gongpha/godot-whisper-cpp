@@ -64,6 +64,7 @@ def _process_env(self, env, sources, is_gdextension):
 
     sources.extend([
         thirdparty_dir + "ggml/src/ggml-backend.cpp",
+        thirdparty_dir + "ggml/src/ggml-backend-dl.cpp",
         thirdparty_dir + "ggml/src/ggml-backend-reg.cpp",
         thirdparty_dir + "ggml/src/ggml-opt.cpp",
         thirdparty_dir + "ggml/src/ggml-threading.cpp",
