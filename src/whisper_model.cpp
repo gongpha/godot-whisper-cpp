@@ -1,5 +1,11 @@
 #include "whisper_model.h"
 
+#ifdef _GDEXTENSION
+using namespace godot;
+#else
+#include "core/object/class_db.h"
+#endif
+
 WhisperModel::WhisperModel() {
 }
 

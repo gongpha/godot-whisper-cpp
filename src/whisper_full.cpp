@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 using namespace godot;
 #else
+#include "core/object/class_db.h"
 #include "core/string/print_string.h"
 #include "core/io/file_access.h"
 #endif
