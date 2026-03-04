@@ -2,17 +2,10 @@
 
 #ifdef _GDEXTENSION
 #include <godot_cpp/godot.hpp>
-#define GDXMOD_LIBRARY_INITIALIZE_FUNC initialize_whisper_types
-#define GDXMOD_LIBRARY_UNINITIALIZE_FUNC uninitialize_whisper_types
-#define GDXMOD_LIBRARY_INITIALIZE_NAME GDXMOD_LIBRARY_INITIALIZE_FUNC(godot::ModuleInitializationLevel p_level)
-#define GDXMOD_LIBRARY_UNINITIALIZE_NAME GDXMOD_LIBRARY_UNINITIALIZE_FUNC(godot::ModuleInitializationLevel p_level)
+using namespace godot;
 #else
 #include "modules/register_module_types.h"
-#define GDXMOD_LIBRARY_INITIALIZE_FUNC initialize_whisper_module
-#define GDXMOD_LIBRARY_UNINITIALIZE_FUNC uninitialize_whisper_module
-#define GDXMOD_LIBRARY_INITIALIZE_NAME GDXMOD_LIBRARY_INITIALIZE_FUNC(ModuleInitializationLevel p_level)
-#define GDXMOD_LIBRARY_UNINITIALIZE_NAME GDXMOD_LIBRARY_UNINITIALIZE_FUNC(ModuleInitializationLevel p_level)
 #endif
 
-void GDXMOD_LIBRARY_INITIALIZE_NAME;
-void GDXMOD_LIBRARY_UNINITIALIZE_NAME;
+void initialize_whisper_module(ModuleInitializationLevel p_level);
+void uninitialize_whisper_module(ModuleInitializationLevel p_level);
