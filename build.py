@@ -17,12 +17,14 @@ def _process_env(self, env, sources, is_gdextension):
     else :
         is_msvc = False
 
+    if not is_gdextension:
+        env.disable_warnings()
+
     # here we go again
     if is_msvc:
         env.Append(CXXFLAGS=["/EHsc"])
     else:
         env.Append(CXXFLAGS=["-fexceptions"])
-
     # retrieve git info
     try:
         build_number = int(subprocess.check_output(
@@ -41,7 +43,7 @@ def _process_env(self, env, sources, is_gdextension):
         ).strip()
     except Exception:
         commit = "unknown"
-	
+    
     # setup ggml sources and includes
 
     env.Append(CPPDEFINES=[
