@@ -10,7 +10,7 @@
 using namespace godot;
 #else
 #include "core/string/print_string.h"
-#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "servers/audio/audio_server.h"
 #endif

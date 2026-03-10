@@ -5,6 +5,7 @@ using namespace godot;
 #else
 #include "modules/register_module_types.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #endif
 
 #include "whisper_model.h"
@@ -13,7 +14,7 @@ using namespace godot;
 
 static Ref<ResourceFormatLoaderWhisperModel> whisper_model_resource_loader;
 
-void initialize_library_whisper(ModuleInitializationLevel p_level) {
+inline void initialize_library_whisper(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -33,7 +34,7 @@ void initialize_library_whisper(ModuleInitializationLevel p_level) {
 #endif
 }
 
-void uninitialize_library_whisper(ModuleInitializationLevel p_level) {
+inline void uninitialize_library_whisper(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
