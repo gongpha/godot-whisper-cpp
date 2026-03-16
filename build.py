@@ -29,7 +29,7 @@ def _process_env(self, env, sources, is_gdextension):
     try:
         build_number = int(subprocess.check_output(
             ["git", "rev-list", "--count", "HEAD"],
-            cwd="thirdparty/whisper.cpp",
+            cwd=thirdparty_dir,
             universal_newlines=True
         ).strip())
     except Exception:
@@ -37,9 +37,9 @@ def _process_env(self, env, sources, is_gdextension):
 
     try:
         commit = subprocess.check_output(
-                ["git", "rev-parse", "--short=7", "HEAD"],
-                cwd="thirdparty/whisper.cpp",
-                universal_newlines=True
+            ["git", "rev-parse", "--short=7", "HEAD"],
+            cwd=thirdparty_dir,
+            universal_newlines=True
         ).strip()
     except Exception:
         commit = "unknown"
